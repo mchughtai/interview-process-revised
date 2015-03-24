@@ -51,7 +51,6 @@ public class Hello implements EntryPoint {
     Integer numberOfCompletedCall = new Integer(0);
     final Label countCallLabel = new Label();
     final Button countCallButton = new Button("Count Calls");
-	
     
     /*
      * UI for database calls
@@ -91,7 +90,8 @@ public class Hello implements EntryPoint {
 	    nameField.setText("Gwt User");
         // We can add style names to widgets
         sendButton.addStyleName("sendButton");
-        
+        sendButton.addStyleName("red");
+
         // Focus the cursor on the name field when the app loads
         nameField.setFocus(true);
         nameField.selectAll();
@@ -110,6 +110,33 @@ public class Hello implements EntryPoint {
         dialogVPanel.setHorizontalAlignment(VerticalPanel.ALIGN_RIGHT);
         dialogVPanel.add(closeButton);
         dialogBox.setWidget(dialogVPanel);
+        
+        // Add a handler to the count-call button
+        countCallButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				countCallService.countCall(numberOfCompletedCall, new AsyncCallback<Integer>() {
+					@Override
+					public void onFailure(Throwable caught) {
+			            caught.printStackTrace();
+			            Window.alert("Error : " + caught.getMessage());
+					}
+					
+					@Override
+					public void onSuccess(Integer result) {
+						numberOfCompletedCall = result;
+						if (numberOfCompletedCall == null) {
+							Window.alert("Error: countCall returned null");
+						}
+						
+						String msg = (numberOfCompletedCall == 1) ? " call successfully completed" : " calls successfully completed.";
+						countCallLabel.setText(numberOfCompletedCall + msg);
+					}
+				});
+				
+			}
+		});
+        
         
         // Add a handler to close the DialogBox
         closeButton.addClickHandler(new ClickHandler() {
@@ -147,7 +174,7 @@ public class Hello implements EntryPoint {
                 errorLabel.setText("");
                 String textToServer = nameField.getText();
                 if (!FieldVerifier.isValidName(textToServer)) {
-                    errorLabel.setText("Please enter more than 4 caracters");
+                    errorLabel.setText("Name must be at least 4 characters long");
                     return;
                 }
 
@@ -222,8 +249,18 @@ public class Hello implements EntryPoint {
             }
         });
 	    
+	    clearPersonButton.addClickHandler(new ClickHandler() {
+	    	@Override
+	    	public void onClick(ClickEvent event) {
+	    		onClearPersonSection();
+	    	}
+	    });
 	}
 	
+	private void onClearPersonSection() {
+		personId.setText("");
+		personName.setText("");
+	}
 	
 	private void onGetPersonClick(){
 	    int personId = 1;
